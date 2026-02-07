@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Primary SEO -->
+    <title>Monerod Pool | 0% Fee Monero (XMR) Mining Pool</title>
+    <meta name="title" content="Monerod Pool | 0% Fee Monero (XMR) Mining Pool">
+    <meta name="description" content="A high-performance, zero-fee Monero (XMR) mining pool. Real-time stats, PPLNS payouts, and integrated remote nodes. Start mining Monero today with Monerod.">
+    <meta name="keywords" content="Monero mining pool, XMR mining, zero fee mining pool, Monerod, PPLNS, RandomX mining, XMRig, crypto mining dashboard">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+
+    <!-- Open Graph / Facebook / Discord (How it looks when shared) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://monerod.org/">
+    <meta property="og:title" content="Monerod Pool | Zero Fee XMR Mining">
+    <meta property="og:description" content="Track your hashrate and earnings on the most transparent 0% fee Monero pool. Featuring PPLNS rewards and XMRig-md boost support.">
+    <meta property="og:image" content="monerod.png">
+
+    <!-- Twitter Card -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://monerod.org/">
+    <meta property="twitter:title" content="Monerod Pool | Monero Mining Dashboard">
+    <meta property="twitter:description" content="Mine XMR with 0% fees. Real-time hashrate charts and PPLNS payouts.">
+    <meta property="twitter:image" content="monerod.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="monerod.png">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav>
+        <div class="container nav-content">
+            <div class="brand">
+                <img src="monerod.png" alt="Monerod">
+                <!--<span><strong>Monerod</strong></span>-->
+            </div>
+            <div class="nav-links">
+                <button id="authBtn" class="btn btn-outline">Sign In</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <div class="container main-content">
+
+        <!-- ROW 1: Network & Pool -->
+        <div class="grid-row top-row">
+
+            <!-- Network Stats -->
+            <div class="card">
+                <div class="card-header simple-header">
+                    <h4><i class="fas fa-globe"></i> Network</h4>
+                </div>
+                <div class="card-body">
+                    <div class="grid-2x2">
+                        <div class="stat-box" title="Network Hashrate">
+                            <label><i class="fas fa-tachometer-alt"></i> Hashrate</label>
+                            <span id="net-hash">---</span>
+                        </div>
+                        <div class="stat-box" title="Network Difficulty">
+                            <label><i class="fas fa-dumbbell"></i> Difficulty</label>
+                            <span id="net-diff">---</span>
+                        </div>
+                        <div class="stat-box" title="Current Block Height">
+                            <label><i class="fas fa-cubes"></i> Height</label>
+                            <span id="net-height">---</span>
+                        </div>
+                        <div class="stat-box" title="Block Reward">
+                            <label><i class="fas fa-coins"></i> Reward</label>
+                            <span id="net-reward">---</span>
+                        </div>
+                        <div class="stat-box" title="Time since last network block">
+                            <label><i class="fas fa-stopwatch"></i> Last Block</label>
+                            <span id="net-last">---</span>
+                        </div>
+                        <div class="stat-box" title="XMR Price (USD)">
+                            <label><i class="fas fa-dollar-sign"></i> Price</label>
+                            <span id="net-price">---</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pool Stats (With Chart) -->
+            <div class="card">
+                <div class="card-header chart-header">
+                    <div class="chart-wrapper">
+                        <canvas id="poolChart"></canvas>
+                    </div>
+                    <div class="header-overlay">
+                        <h4><i class="fas fa-chart-area"></i> Pool</h4>
+                        <span id="pool-hash-display" class="highlight-text">---</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="grid-4-col" style="margin-bottom: 15px;">
+                        <div class="stat-box" title="Pool Hashrate">
+                            <label><i class="fas fa-server"></i> Hashrate</label>
+                            <span id="pool-hash">---</span>
+                        </div>
+                        <div class="stat-box" title="Pool Boost Hashrate">
+                            <label><i class="fas fa-bolt"></i> Boost Hash</label>
+                            <span id="pool-boost">---</span>
+                        </div>
+                        <div class="stat-box" title="Connected Miners">
+                            <label><i class="fas fa-users"></i> Miners</label>
+                            <span id="pool-miners">0</span>
+                        </div>
+                        <div class="stat-box clickable" onclick="openModal('blkModal')" title="Blocks Found">
+                            <label><i class="fas fa-cube"></i> Blocks <i class="fas fa-chevron-right tiny-icon"></i></label>
+                            <span id="pool-blocks">0</span>
+                        </div>
+                    </div>
+
+                    <div class="grid-4-col">
+                        <div class="stat-box" title="Current Effort">
+                            <label><i class="fas fa-percent"></i> Effort</label>
+                            <span id="pool-effort">---</span>
+                        </div>
+                        <div class="stat-box clickable" onclick="openModal('payModal')" title="Payments Made">
+                            <label><i class="fas fa-money-check-alt"></i> Payments <i class="fas fa-chevron-right tiny-icon"></i></label>
+                            <span id="pool-payments">0</span>
+                        </div>
+                        <div class="stat-box" title="PPLNS Window">
+                            <label><i class="fas fa-clock"></i> PPLNS</label>
+                            <span id="pool-pplns">---</span>
+                        </div>
+                        <div class="stat-box" title="Network Share">
+                            <label><i class="fas fa-chart-pie"></i> Net Share</label>
+                            <span id="pool-share">---</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROW 2: Miner Section -->
+        <div class="card miner-section">
+
+            <!-- Login View -->
+            <div id="login-view" class="card-body login-container">
+                <i class="fas fa-user-lock login-icon"></i>
+                <h3>Miner Login</h3>
+                <p>Enter your Monero address to view stats and manage settings.</p>
+                <div class="center-input">
+                    <input type="text" id="walletInput" placeholder="4... or 8..." class="form-input">
+                    <button onclick="handleLogin()" class="btn btn-primary">Track</button>
+                </div>
+                <button class="btn btn-text" onclick="openModal('conModal')">How to connect?</button>
+            </div>
+
+            <!-- Dashboard View -->
+            <div id="miner-view" class="hidden">
+                <div class="card-header chart-header">
+                    <div class="chart-wrapper">
+                        <canvas id="minerChart"></canvas>
+                    </div>
+                    <div class="header-overlay">
+                        <h4><i class="fas fa-microchip"></i> Miner</h4>
+                        <span id="miner-hash-display" class="highlight-text">0 H/s</span>
+                        <div id="boost-status" class="boost-badge hidden">
+                            <i class="fas fa-bolt"></i> Boosting!
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="miner-layout">
+                        <!-- Balance Card -->
+                        <div class="balance-sidebar">
+                            <div class="highlight-box">
+                                <h3 style="color: var(--text-muted); font-size: 0.9rem; margin:0;"><i class="fas fa-wallet"></i> Pending Balance</h3>
+                                <h2 id="miner-balance" style="color: var(--monero-orange); margin: 5px 0;">0.000000 XMR</h2>
+                                <div class="progress-bar">
+                                    <div id="payout-progress" class="progress-fill" style="width: 0%"></div>
+                                </div>
+                                <small class="text-muted" style="font-size: 0.75rem;">Threshold: <span id="miner-threshold-display">---</span> XMR</small>
+                            </div>
+
+                            <div class="stat-box" title="Total Paid">
+                                <label><i class="fas fa-receipt"></i> Total Paid</label>
+                                <h4 id="miner-paid">0.000000 XMR</h4>
+                                <small id="miner-fiat" class="text-muted">≈ $0.00 USD</small>
+                            </div>
+
+                            <div class="stat-box" title="Estimated Earnings (PPLNS Window)">
+                                <label><i class="fas fa-calculator"></i> Estimated Earnings</label>
+                                <h4 id="miner-calc">---</h4>
+                                <small class="text-muted"><i>Within PPLNS Window</i></small>
+                            </div>
+
+                             <div class="stat-box" title="Valid / Invalid Shares">
+                                <label><i class="fas fa-chart-bar"></i> Total Shares (Valid/Invalid)</label>
+                                <h4 id="miner-shares">0 / 0</h4>
+                            </div>
+                        </div>
+
+                        <!-- Data Tabs -->
+                        <div class="miner-data">
+                            <div class="tabs">
+                                <button class="tab-btn active" onclick="switchTab('workers')"><i class="fas fa-server"></i> Workers</button>
+                                <button class="tab-btn" onclick="switchTab('payments')"><i class="fas fa-money-bill"></i> Payments</button>
+                                <button class="tab-btn" onclick="switchTab('blocks')"><i class="fas fa-cube"></i> Block Share</button>
+                                <button class="tab-btn" onclick="switchTab('settings')"><i class="fas fa-cog"></i> Settings</button>
+                            </div>
+
+                            <div id="tab-workers" class="tab-content active">
+                                <div class="table-container">
+                                    <table class="table">
+                                        <thead><tr><th>Name</th><th>Hashrate</th><th>Shares</th><th>Hashes</th><th>Last Seen</th></tr></thead>
+                                        <tbody id="worker-list"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div id="tab-payments" class="tab-content">
+                                <div class="table-container">
+                                    <table class="table">
+                                        <thead><tr><th>Payees</th><th>Amount</th><th>Fee</th><th>TX</th><th>Paid</th></tr></thead>
+                                        <tbody id="miner-payments-list"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div id="tab-blocks" class="tab-content">
+                                <div class="table-container">
+                                    <table class="table">
+                                        <thead><tr><th>Amount</th><th>Share</th><th>Block</th><th>Paid</th><th>Found</th></tr></thead>
+                                        <tbody id="miner-blocks-list"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div id="tab-settings" class="tab-content">
+                                <div class="settings-wrap">
+                                    <div class="settings-card">
+                                        <label class="setting-label"><i class="fas fa-hand-holding-usd"></i> Auto-Payment Threshold</label>
+                                        <p class="tiny text-muted mb-10">Minimum value: <span id="min-payout-val">0.003</span> XMR</p>
+                                        <div class="input-group">
+                                            <input type="number" id="setting-threshold" class="form-input no-arrow" step="0.001" placeholder="0.003">
+                                            <button onclick="saveThreshold()" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+                                        </div>
+                                    </div>
+                                    <div class="settings-card mt-15">
+                                        <label class="setting-label"><i class="fas fa-envelope"></i> Email Notification</label>
+                                        <p class="tiny text-muted mb-10">Get alerted when a worker goes offline.</p>
+                                        <input type="text" id="setting-email-from" class="form-input mb-10 full-width" placeholder="Current Email (Leave empty if new)">
+                                        <div class="input-group">
+                                            <input type="text" id="setting-email-to" class="form-input" placeholder="New Email Address">
+                                            <button onclick="saveEmail()" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Update</button>
+                                        </div>
+                                        <div class="check-group mt-10">
+                                            <label class="switch">
+                                                <input type="checkbox" id="setting-email-enable">
+                                                <span class="slider round"></span>
+                                            </label>
+                                            <span class="ml-10">Enable Alerts</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROW 3: Info Cards -->
+        <div class="grid-3-col info-cards">
+            <div class="card">
+                <div class="card-header simple-header"><h4><i class="fas fa-question-circle"></i> FAQ</h4></div>
+                <div class="card-body">
+                    <p><b>Is this pool really free?</b><br>Yes! There are no fees on this pool, zero.</p><br>
+                    <p><b>How does the Boost work?</b><br>Miners using XMRig-md contribute 1% hash back to the pool.</p><br>
+                    <p><b>Payout hasn't increased?</b><br>You will see your pending payment increase with each block found.</p><br>
+                    <div class="text-right">
+                        <button class="btn btn-text" onclick="openModal('apiModal')"><i class="fas fa-code"></i> API Endpoints</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header simple-header"><h4><i class="fas fa-network-wired"></i> Node</h4></div>
+                <div class="card-body">
+                    <p>Use our remote node to sync wallets without downloading the blockchain.</p>
+                    <table class="simple-table">
+                        <tr><td>Host</td><td>node.monerod.org</td></tr>
+                        <tr><td>Port</td><td>443</td></tr>
+                        <tr><td>TLS</td><td>Yes</td></tr>
+                    </table>
+                    <p class="tiny text-warning mt-10"><b>NOTE:</b> Please only use our node if you cannot host your own local copy (which benefits the network).</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header simple-header"><h4><i class="fas fa-heart"></i> Donate</h4></div>
+                <div class="card-body">
+                    <p class="mt-10"><b>Support infra costs</b></p>
+                    <div class="address-box" onclick="copyDonate()" title="Click to Copy">
+                        <span>8B6nMw...1Q9C</span> <i class="fas fa-copy"></i>
+                    </div>
+                    <p class="mt-10"><b>Pool Boost Contribution</b><br>
+                    Download <a href="https://github.com/Monerod-Project/xmrig-md/releases" target="_blank" style="color: var(--monero-orange);">XMRig-md</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2021-<span id="year"></span> The Monerod Project | Frontend v3.0</p>
+        </div>
+    </footer>
+
+    <!-- MODALS -->
+    <div id="blkModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Recent Blocks Found</h4>
+                <span class="close" onclick="closeModal('blkModal')">&times;</span>
+            </div>
+            <div class="modal-body table-responsive">
+                <table class="table">
+                    <thead><tr><th>Block</th><th>Status</th><th>Amount</th><th>Effort</th><th>Found</th></tr></thead>
+                    <tbody id="pool-blocks-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="payModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Recent Payments</h4>
+                <span class="close" onclick="closeModal('payModal')">&times;</span>
+            </div>
+            <div class="modal-body table-responsive">
+                <table class="table">
+                    <thead><tr><th>Payees</th><th>Amount</th><th>Fee</th><th>TX</th><th>Paid</th></tr></thead>
+                    <tbody id="pool-payments-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="conModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Connection Guide</h4>
+                <span class="close" onclick="closeModal('conModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>1. Download <a href="https://github.com/xmrig/xmrig/releases" target="_blank" style="color: var(--monero-orange);">XMRig</a>.</p>
+                <p>2. Update <code>config.json</code>:</p>
+                <pre>
+"url": "mine.monerod.org:4444",
+"user": "YOUR_WALLET",
+"pass": "WORKER_NAME",
+"tls": true</pre>
+                <p class="tiny mt-10">Non-TLS port: 5555</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="apiModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>API Endpoints</h4>
+                <span class="close" onclick="closeModal('apiModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <ul class="api-list">
+                    <li><span class="text-muted">GET</span> https://np-api.monerod.org/network/stats</li>
+                    <li><span class="text-muted">GET</span> https://np-api.monerod.org/pool/stats</li>
+                    <li><span class="text-muted">GET</span> https://np-api.monerod.org/pool/blocks</li>
+                    <li><span class="text-muted">GET</span> https://np-api.monerod.org/pool/payments</li>
+                    <li><span class="text-muted">GET</span> https://np-api.monerod.org/miner/{addr}/stats</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
