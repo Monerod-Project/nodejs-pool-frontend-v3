@@ -1,7 +1,6 @@
 // --- CONFIGURATION ---
 const API_URL = "https://np-api.monerod.org";
 const BONUS_API = "https://bonus-api.monerod.org/2/summary";
-const COIN_API = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=USD&ids=monero&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=1h";
 const CACHE_KEY = "monero_miner_address";
 
 // Worker Colors Palette (Bright & Distinct)
@@ -22,7 +21,6 @@ const appState = {
     minerStats: {},
     poolChartInstance: null,
     minerChartInstance: null,
-    fiatPrice: 0,
     minPayout: 0.003
 };
 
@@ -36,11 +34,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function refreshData() {
     try {
-        await Promise.all([
-            fetchNetworkStats(),
-            fetchPoolStats(),
-            fetchConfig()
-        ]);
+        // Sequential to ensure netStats is ready before poolStats calculations
+        await fetchNetworkStats();
+        await fetchPoolStats();
+        fetchConfig();
         if (appState.address) {
             await fetchMinerData();
         }
@@ -72,19 +69,6 @@ async function fetchNetworkStats() {
     setText('net-height', data.height.toLocaleString());
     setText('net-reward', formatXMR(data.value));
     setText('net-last', timeAgo(data.ts));
-
-    fetchCoinPrice();
-}
-
-async function fetchCoinPrice() {
-    try {
-        const res = await fetch(COIN_API);
-        const data = await res.json();
-        if(data && data[0]) {
-            appState.fiatPrice = data[0].current_price;
-            setText('net-price', `$${appState.fiatPrice.toFixed(2)}`);
-        }
-    } catch(e) { /* Limit hit */ }
 }
 
 async function fetchPoolStats() {
@@ -109,6 +93,15 @@ async function fetchPoolStats() {
     const netH = appState.netStats.difficulty / 120;
     const share = ((stats.hashRate / netH) * 100).toFixed(3) + '%';
     setText('pool-share', share);
+
+    // Prices
+    if (stats.price) {
+        let pText = "";
+        if (stats.price.usd) pText += `$${stats.price.usd.toFixed(2)} USD<br>`;
+        if (stats.price.eur) pText += `€${stats.price.eur.toFixed(2)} EUR<br>`;
+        if (stats.price.btc) pText += `₿${stats.price.btc.toFixed(6)} BTC`;
+        document.getElementById('net-price').innerHTML = pText;
+    }
 
     // Boost
     try {
@@ -147,6 +140,11 @@ async function fetchMinerData() {
         const user = await userRes.json();
         const threshold = user.payout_threshold / 1e12;
 
+        // Update Email Checkbox
+        if(document.getElementById('setting-email-enable')) {
+            document.getElementById('setting-email-enable').checked = (user.email_enabled === 1);
+        }
+
         // 3. Fetch Worker List
         const wRes = await fetch(`${API_URL}/miner/${addr}/identifiers`);
         const workers = await wRes.json();
@@ -165,8 +163,8 @@ async function fetchMinerData() {
         setText('miner-paid', paid.toFixed(6) + ' XMR');
         setText('miner-threshold-display', threshold.toFixed(3));
 
-        if (appState.fiatPrice) {
-            setText('miner-fiat', `≈ $${(paid * appState.fiatPrice).toFixed(2)} USD`);
+        if (appState.poolStats.price && appState.poolStats.price.usd) {
+            setText('miner-fiat', `≈ $${(paid * appState.poolStats.price.usd).toFixed(2)} USD`);
         }
 
         // Progress Bar
@@ -178,11 +176,6 @@ async function fetchMinerData() {
         document.getElementById('boost-status').classList.toggle('hidden', !isBoosting);
 
         // --- FIXED ESTIMATED EARNINGS CALCULATION ---
-        /**
-         * Formula: (Miner Hash / Network Hash) * Blocks in Window * Block Reward
-         * Network Hash = Difficulty / 120 (Target block time)
-         * Blocks in Window = Window Duration (sec) / 120
-         */
         if (minerHash > 0 && netDiff > 0 && netReward > 0) {
             const networkHash = netDiff / 120;
             const blocksInWindow = windowSeconds / 120;
@@ -239,15 +232,12 @@ function renderPoolChart(hashrateData, blockList) {
             .map(b => {
                 const bTime = b.ts * 1000;
                 let closestY = 0;
-
-                // Snap block dot to the line
                 if(linePoints.length > 0) {
                     const closest = linePoints.reduce((prev, curr) =>
                         Math.abs(curr.x - bTime) < Math.abs(prev.x - bTime) ? curr : prev
                     );
                     closestY = closest.y;
                 }
-
                 return {
                     x: bTime,
                     y: closestY,
@@ -314,14 +304,12 @@ function renderPoolChart(hashrateData, blockList) {
                 x: {
                     type: 'time',
                     display: false,
-                    min: twentyFourHoursAgo, // Force start of chart to 24h ago
-                    max: now                 // Force end of chart to now
+                    min: twentyFourHoursAgo,
+                    max: now
                 },
                 y: {
                     display: false,
                     min: 0,
-                    // If hashrate is very high, this ensures the line isn't
-                    // squashed at the very bottom or top
                     beginAtZero: true
                 }
             }
@@ -339,19 +327,16 @@ function renderMinerChart(workersData) {
     const now = Date.now();
     const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
 
-    // Helper to process, filter, and sort each data series
     const processSeries = (data) => {
         if (!Array.isArray(data)) return [];
         return data
-            .filter(d => d.ts >= twentyFourHoursAgo) // Filter for last 24h
-            .map(d => ({ x: d.ts, y: d.hs }))        // Map Object properties
-            .sort((a, b) => a.x - b.x);              // Sort Oldest -> Newest
+            .filter(d => d.ts >= twentyFourHoursAgo)
+            .map(d => ({ x: d.ts, y: d.hs }))
+            .sort((a, b) => a.x - b.x);
     };
 
-    // 1. Process the "global" series (The filled Teal area)
     if (workersData.global) {
         const globalPoints = processSeries(workersData.global);
-
         const gradient = ctx.createLinearGradient(0, 0, 0, 200);
             gradient.addColorStop(0, 'rgba(242, 104, 34, 0.5)');
             gradient.addColorStop(1, 'rgba(242, 104, 34, 0.0)');
@@ -366,18 +351,14 @@ function renderMinerChart(workersData) {
             pointRadius: 0,
             pointHitRadius: 10,
             tension: 0.4,
-            order: 10 // Draw on bottom layer
+            order: 10
         });
     }
 
-    // 2. Process all individual workers (Bright colored lines)
     let colorIdx = 0;
-    // Worker colors from our WORKER_COLORS palette
     Object.keys(workersData).forEach(key => {
-        if (key === 'global') return; // Skip global as we handled it above
-
+        if (key === 'global') return;
         const workerPoints = processSeries(workersData[key]);
-
         if (workerPoints.length > 0) {
             datasets.push({
                 label: key,
@@ -388,13 +369,12 @@ function renderMinerChart(workersData) {
                 pointRadius: 0,
                 pointHitRadius: 10,
                 tension: 0.4,
-                order: 5 // Draw on top layer
+                order: 5
             });
             colorIdx++;
         }
     });
 
-    // 3. Construct the Chart
     appState.minerChartInstance = new Chart(ctx, {
         type: 'line',
         data: { datasets },
@@ -467,7 +447,7 @@ async function loadMinerPayments(addr) {
             <td>1</td>
             <td>${formatXMR(r.amount)} XMR</td>
             <td>${formatXMR(r.fee || 0)} XMR</td>
-            <td><a href="https://xmrchain.net/tx/${r.txnHash}" target="_blank"><i class="fas fa-external-link-alt"></i></a></td>
+            <td><a href="https://xmrchain.net/tx/${r.txnHash}" target="_blank"><i class="fas fa-circle-info"></i></a></td>
             <td>${formatDate(r.ts)}</td>
         </tr>`;
     });
@@ -480,10 +460,16 @@ async function loadMinerBlocks(addr) {
     table.innerHTML = '';
     if(!data.length) table.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No blocks found yet</td></tr>`;
     data.slice(0,10).forEach(r => {
+        // value is typically returned in XMR for this endpoint, not atomic units
+        const valXMR = r.value ? r.value.toFixed(6) : "0.000000";
+        // Identifier: Use height if available, otherwise ID, or "View"
+        const blockLabel = r.height ? r.height : (r.id ? r.id : "View");
+        const hashLink = r.hash ? r.hash : "#";
+
         table.innerHTML += `<tr>
-            <td>${formatXMR(r.value)} XMR</td>
-            <td>${r.value_percent.toFixed(6)}%</td>
-            <td><a href="https://xmrchain.net/block/${r.height}" target="_blank">${r.height}</a></td>
+            <td>${valXMR} XMR</td>
+            <td>${r.value_percent ? r.value_percent.toFixed(6) : '0.00'}%</td>
+            <td><a href="https://xmrchain.net/block/${hashLink}" target="_blank">${blockLabel}</a></td>
             <td>${formatDate(r.ts)}</td>
             <td>${formatDate(r.ts_found)}</td>
         </tr>`;

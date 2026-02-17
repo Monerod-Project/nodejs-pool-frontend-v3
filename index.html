@@ -47,9 +47,9 @@
                 <!--<span><strong>Monerod</strong></span>-->
             </div>
             <div>
-            <a href="https://discord.gg/ZypfV3kkb6" target="_blank" title="Discord"><i class="fa-brands fa-discord" style="color: #ffffff;"></i></a>
-            -
-            <a href="https://matrix.to/#/!pGfBoPkfnkVTZbEviZ:monero.social?via=monero.social" target="_blank" title="Matrix"><i class="fa-solid fa-comment" style="color: #ffffff;"></i></a>
+            <a href="https://discord.gg/ZypfV3kkb6" target="_blank" title="Discord"><i class="fa-brands fa-discord"></i></a>
+            &nbsp;-&nbsp;
+            <a href="https://matrix.to/#/!pGfBoPkfnkVTZbEviZ:monero.social?via=monero.social" target="_blank" title="Matrix"><i class="fa-solid fa-comment"></i></a>
             </div>
             <div class="nav-links">
                 <button id="authBtn" class="btn btn-outline">Sign In</button>
@@ -92,9 +92,9 @@
                             <label><i class="fas fa-stopwatch"></i> Last Block</label>
                             <span id="net-last">---</span>
                         </div>
-                        <div class="stat-box" title="XMR Price (USD)">
+                        <div class="stat-box" title="XMR Price">
                             <label><i class="fas fa-dollar-sign"></i> Price</label>
-                            <span id="net-price">---</span>
+                            <span id="net-price" style="font-size: 0.9rem; line-height: 1.2;">---</span>
                         </div>
                     </div>
                 </div>
@@ -160,7 +160,7 @@
             <div id="login-view" class="card-body login-container">
                 <i class="fas fa-user-lock login-icon"></i>
                 <h3>Miner Login</h3>
-                <p>Enter your Monero mining address below.<br />Need a Wallet? Download the <a href="https://www.getmonero.org/downloads/" target="_blank" style="color: var(--monero-orange);">Official Monero Wallet</a>.</p>
+                <p>Enter your Monero mining address below.<br />Need a Wallet? Download the <a href="https://www.getmonero.org/downloads/" target="_blank">Official Monero Wallet</a>.</p>
                 <div class="center-input">
                     <input type="text" id="walletInput" placeholder="4... or 8..." class="form-input">
                     <button onclick="handleLogin()" class="btn btn-primary">Track</button>
@@ -290,7 +290,7 @@
                 <div class="card-header simple-header"><h4><i class="fas fa-question-circle"></i> FAQ</h4></div>
                 <div class="card-body">
                     <p><b>Is this pool really free?</b><br>Yes! There are no fees on this pool, zero.</p><br>
-                    <p><b>How does the Boost work?</b><br>Miners using <a href="https://github.com/Monerod-Project/xmrig-md/releases" target="_blank" style="color: var(--monero-orange);">XMRig-md<a/> contribute 1% hash back to the pool.</p><br>
+                    <p><b>How does the Boost work?</b><br>Miners using <a href="https://github.com/Monerod-Project/xmrig-md/releases" target="_blank">XMRig-md</a> contribute 1% hash back to the pool.</p><br>
                     <p><b>Payout hasn't increased?</b><br>You will see your pending payment increase with each block found.</p><br>
                     <div class="text-right">
                         <button class="btn btn-text" onclick="openModal('apiModal')"><i class="fas fa-code"></i> API Endpoints</button>
@@ -317,7 +317,7 @@
                         <span>8B6nMw...1Q9C</span> <i class="fas fa-copy"></i>
                     </div>
                     <p class="mt-10"><b>Pool Boost Contribution</b><br>
-                    Download <a href="https://github.com/Monerod-Project/xmrig-md/releases" target="_blank" style="color: var(--monero-orange);">XMRig-md</a>.</p>
+                    Download <a href="https://github.com/Monerod-Project/xmrig-md/releases" target="_blank">XMRig-md</a>.</p>
                 </div>
             </div>
         </div>
@@ -326,7 +326,7 @@
     <!-- Footer -->
     <footer>
         <div class="container">
-            <p>&copy; 2021-<span id="year"></span> The Monerod Project | Frontend v3.1</p>
+            <p>&copy; 2021-<span id="year"></span> The Monerod Project | Frontend v3.2</p>
         </div>
     </footer>
 
@@ -368,8 +368,8 @@
                 <span class="close" onclick="closeModal('conModal')">&times;</span>
             </div>
             <div class="modal-body">
-                <p>1. Download <a href="https://github.com/Monerod-Project/xmrig-md/releases" target="_blank" style="color: var(--monero-orange);">XMRig-md</a> or <a href="https://github.com/xmrig/xmrig/releases" target="_blank" style="color: var(--monero-orange);">XMRig</a>.</p>
-                <p>2. Update <code>config.json as shown below, then run XMRig as administrator (Windows) or sudo (Linux).</code></p>
+                <p>1. Download <a href="https://github.com/Monerod-Project/xmrig-md/releases" target="_blank">XMRig-md</a> or <a href="https://github.com/xmrig/xmrig/releases" target="_blank">XMRig</a>.</p>
+                <p>2. Update <code>config.json</code> as shown below, then run XMRig as administrator (Windows) or sudo (Linux).</p>
                 <pre>
 "url": "mine.monerod.org:4444",
 "user": "YOUR_WALLET_ADDRESS",
