@@ -1,0 +1,16 @@
+{
+    "name": "Monerod Pool",
+    "short_name": "Monerod",
+    "description": "0% fee Monero (XMR) mining pool dashboard \u2014 live hashrate, PPLNS payouts, and worker stats.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#111111",
+    "theme_color": "#111111",
+    "orientation": "portrait-primary",
+    "icons": [
+        { "src": "monerod.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "monerod.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "monerod.png", "sizes": "1024x1024", "type": "image/png", "purpose": "maskable" }
+    ]
+}

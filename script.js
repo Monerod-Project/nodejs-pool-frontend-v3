@@ -443,10 +443,13 @@ async function loadMinerPayments(addr) {
     table.innerHTML = '';
     if(!data.length) table.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No payments yet</td></tr>`;
     data.slice(0,10).forEach(r => {
+        // The per-miner payments endpoint doesn't return a fee breakdown (fee is only
+        // available on pool-wide payment records), so show "—" instead of a fake 0.00.
+        const feeDisplay = (typeof r.fee === 'number') ? `${formatXMR(r.fee)} XMR` : '—';
         table.innerHTML += `<tr>
             <td>1</td>
             <td>${formatXMR(r.amount)} XMR</td>
-            <td>${formatXMR(r.fee || 0)} XMR</td>
+            <td>${feeDisplay}</td>
             <td><a href="https://xmrchain.net/tx/${r.txnHash}" target="_blank"><i class="fas fa-circle-info"></i></a></td>
             <td>${formatDate(r.ts)}</td>
         </tr>`;
@@ -515,32 +518,59 @@ async function loadPoolPayments() {
 }
 
 // --- SETTINGS ---
-function saveThreshold() {
+// Guards against double-submits: the API now throttles rapid repeat calls per user
+// (429 "Too many attempts..."), so we disable the trigger button for the duration of
+// the request instead of letting a fast double-click round-trip to the server twice.
+async function withButtonGuard(btn, fn) {
+    if (!btn || btn.disabled) return;
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    try {
+        await fn();
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+    }
+}
+
+function saveThreshold(btn) {
     const val = document.getElementById('setting-threshold').value;
     if(!val || val < appState.minPayout) {
         showToast("Invalid Amount");
         return;
     }
-    const body = new URLSearchParams();
-    body.append('username', appState.address);
-    body.append('threshold', val);
-    fetch(`${API_URL}/user/updateThreshold`, {method:'POST', body}).then(r=>r.json()).then(d=>{
-        showToast(d.msg || "Error");
-        if(!d.error) fetchMinerData();
+    withButtonGuard(btn, async () => {
+        const body = new URLSearchParams();
+        body.append('username', appState.address);
+        body.append('threshold', val);
+        try {
+            const res = await fetch(`${API_URL}/user/updateThreshold`, {method:'POST', body});
+            const d = await res.json();
+            showToast(d.msg || d.error || (res.ok ? "Updated" : "Error"));
+            if (res.ok && !d.error) fetchMinerData();
+        } catch (e) {
+            showToast("Network error, please try again");
+        }
     });
 }
 
-function saveEmail() {
+function saveEmail(btn) {
     const from = document.getElementById('setting-email-from').value;
     const to = document.getElementById('setting-email-to').value;
     const en = document.getElementById('setting-email-enable').checked ? 1 : 0;
-    const body = new URLSearchParams();
-    body.append('username', appState.address);
-    body.append('enabled', en);
-    body.append('from', from);
-    body.append('to', to);
-    fetch(`${API_URL}/user/subscribeEmail`, {method:'POST', body}).then(r=>r.json()).then(d=>{
-        showToast(d.msg || d.error || "Updated");
+    withButtonGuard(btn, async () => {
+        const body = new URLSearchParams();
+        body.append('username', appState.address);
+        body.append('enabled', en);
+        body.append('from', from);
+        body.append('to', to);
+        try {
+            const res = await fetch(`${API_URL}/user/subscribeEmail`, {method:'POST', body});
+            const d = await res.json();
+            showToast(d.msg || d.error || (res.ok ? "Updated" : "Error"));
+        } catch (e) {
+            showToast("Network error, please try again");
+        }
     });
 }
 
@@ -609,6 +639,16 @@ function timeAgo(ts) {
 function openModal(id) { document.getElementById(id).style.display = 'block'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 window.onclick = (e) => { if(e.target.classList.contains('modal')) e.target.style.display="none"; }
+document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    document.querySelectorAll('.modal').forEach(m => { if (m.style.display === 'block') m.style.display = 'none'; });
+});
+// Keyboard support for the div-based "clickable" stat boxes (Enter/Space triggers their onclick, like a real button).
+document.querySelectorAll('.clickable[role="button"]').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+    });
+});
 function showToast(msg) {
     const t = document.getElementById('toast');
     t.innerText = msg;

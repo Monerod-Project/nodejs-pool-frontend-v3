@@ -1,0 +1,19 @@
+# Monerod Pool
+
+> Monerod is a 0% fee Monero (XMR) mining pool with a real-time web dashboard, PPLNS payouts, and an integrated remote node.
+
+Monerod charges no pool fee on PPLNS mining rewards. Miners connect via XMRig (or XMRig-md for an optional 1% "Boost" contribution back to the pool) to `mine.monerod.org:4444` (TLS) or port `5555` (non-TLS). The dashboard at https://monerod.org/ shows live network stats, pool hashrate, an individual miner's hashrate/balance/workers once they enter their Monero wallet address, and lets a miner configure their payout threshold and email alerts.
+
+## Key facts
+- Pool fee: 0%
+- Payout system: PPLNS
+- Stratum host: mine.monerod.org (TLS on 4444, non-TLS on 5555)
+- Remote node: node.monerod.org:443 (TLS)
+- Public read API: https://np-api.monerod.org (see /config, /pool/stats, /network/stats, /miner/{address}/stats)
+
+## Pages
+- [Dashboard](https://monerod.org/): live pool/network stats and per-miner tracking.
+
+## Community
+- [Discord](https://discord.gg/ZypfV3kkb6)
+- [Matrix](https://matrix.to/#/!pGfBoPkfnkVTZbEviZ:monero.social?via=monero.social)

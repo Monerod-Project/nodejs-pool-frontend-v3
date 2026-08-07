@@ -2,54 +2,138 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
     <!-- Primary SEO -->
     <title>Monerod | 0% Fee Monero (XMR) Mining Pool</title>
     <meta name="title" content="Monerod Pool | 0% Fee Monero (XMR) Mining Pool">
     <meta name="description" content="A high-performance, zero-fee Monero (XMR) mining pool. Real-time stats, PPLNS payouts, and integrated remote nodes. Start mining Monero today with Monerod.">
     <meta name="keywords" content="Monero mining pool, XMR mining, zero fee mining pool, Monerod, PPLNS, RandomX mining, XMRig, crypto mining dashboard">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <meta name="googlebot" content="index, follow">
     <meta name="language" content="English">
+    <meta name="author" content="The Monerod Project">
+    <meta name="theme-color" content="#111111">
+    <meta name="color-scheme" content="dark">
+    <link rel="canonical" href="https://monerod.org/">
 
     <!-- Open Graph / Facebook / Discord (How it looks when shared) -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://monerod.org/">
+    <meta property="og:site_name" content="Monerod Pool">
+    <meta property="og:locale" content="en_US">
     <meta property="og:title" content="Monerod Pool | Zero Fee XMR Mining">
     <meta property="og:description" content="Track your hashrate and earnings on the most transparent 0% fee Monero pool. Featuring PPLNS rewards and XMRig-md boost support.">
-    <meta property="og:image" content="monerod.png">
+    <meta property="og:image" content="https://monerod.org/monerod.png">
+    <meta property="og:image:alt" content="Monerod Pool logo">
 
     <!-- Twitter Card -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://monerod.org/">
     <meta property="twitter:title" content="Monerod Pool | Monero Mining Dashboard">
     <meta property="twitter:description" content="Mine XMR with 0% fees. Real-time hashrate charts and PPLNS payouts.">
-    <meta property="twitter:image" content="monerod.png">
+    <meta property="twitter:image" content="https://monerod.org/monerod.png">
+    <meta property="twitter:image:alt" content="Monerod Pool logo">
 
-    <!-- Favicon -->
+    <!-- Favicons / PWA -->
     <link rel="icon" type="image/png" href="monerod.png">
+    <link rel="apple-touch-icon" href="monerod.png">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Structured data: helps traditional search engines and AI/answer-engine
+         crawlers understand what this page is and answer questions about it
+         without needing to render the JS dashboard. Purely additive - no visible
+         change to the page. -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Organization",
+                "@id": "https://monerod.org/#organization",
+                "name": "Monerod",
+                "url": "https://monerod.org/",
+                "logo": "https://monerod.org/monerod.png",
+                "sameAs": [
+                    "https://discord.gg/ZypfV3kkb6",
+                    "https://matrix.to/#/!pGfBoPkfnkVTZbEviZ:monero.social?via=monero.social"
+                ]
+            },
+            {
+                "@type": "WebSite",
+                "@id": "https://monerod.org/#website",
+                "url": "https://monerod.org/",
+                "name": "Monerod Pool",
+                "publisher": { "@id": "https://monerod.org/#organization" }
+            },
+            {
+                "@type": "SoftwareApplication",
+                "name": "Monerod Mining Pool Dashboard",
+                "applicationCategory": "FinanceApplication",
+                "operatingSystem": "Any",
+                "url": "https://monerod.org/",
+                "description": "Real-time dashboard for the Monerod Monero (XMR) mining pool: live hashrate, PPLNS payouts, worker stats, and a 0% pool fee.",
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "Is the Monerod mining pool really free?",
+                        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Monerod charges a 0% pool fee on all PPLNS mining rewards." }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "How does Monerod's pool Boost work?",
+                        "acceptedAnswer": { "@type": "Answer", "text": "Miners using XMRig-md contribute an extra 1% of their hashrate back to the pool to help find blocks faster." }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Why hasn't my Monerod payout increased yet?",
+                        "acceptedAnswer": { "@type": "Answer", "text": "Your pending balance increases every time the pool finds a new block; it grows in steps rather than continuously." }
+                    }
+                ]
+            }
+        ]
+    }
+    </script>
+
+    <!-- Resource hints: warms up the connections this page needs immediately
+         (API + CDNs), which speeds up first data paint and is a Core Web Vitals /
+         SEO-adjacent performance win. -->
+    <link rel="preconnect" href="https://np-api.monerod.org">
+    <link rel="dns-prefetch" href="https://np-api.monerod.org">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="monerod.png" as="image">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <!-- Chart.js (deferred: not needed for first paint) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns" defer></script>
     <!-- Styles -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- Visually-hidden h1: the visible brand mark stays exactly as designed, but
+         search engines and screen readers need a real, unique top-level heading
+         that states what this page is. -->
+    <h1 class="sr-only">Monerod &mdash; 0% Fee Monero (XMR) Mining Pool Dashboard</h1>
+
     <!-- Navbar -->
     <nav>
         <div class="container nav-content">
             <div class="brand">
-                <img src="monerod.png" alt="Monerod">
+                <img src="monerod.png" alt="Monerod logo" width="35" height="35">
                 <!--<span><strong>Monerod</strong></span>-->
             </div>
-            <div>
-            <a href="https://discord.gg/ZypfV3kkb6" target="_blank" title="Discord"><i class="fa-brands fa-discord"></i></a>
-            &nbsp;-&nbsp;
-            <a href="https://matrix.to/#/!pGfBoPkfnkVTZbEviZ:monero.social?via=monero.social" target="_blank" title="Matrix"><i class="fa-solid fa-comment"></i></a>
+            <div class="nav-social">
+            <a href="https://discord.gg/ZypfV3kkb6" target="_blank" rel="noopener" title="Discord" aria-label="Join the Monerod Discord"><i class="fa-brands fa-discord"></i></a>
+            <a href="https://matrix.to/#/!pGfBoPkfnkVTZbEviZ:monero.social?via=monero.social" target="_blank" rel="noopener" title="Matrix" aria-label="Join the Monerod Matrix room"><i class="fa-solid fa-comment"></i></a>
             </div>
             <div class="nav-links">
                 <button id="authBtn" class="btn btn-outline">Sign In</button>
@@ -58,9 +142,9 @@
     </nav>
 
     <!-- Notification Toast -->
-    <div id="toast" class="toast hidden"></div>
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
-    <div class="container main-content">
+    <main class="container main-content">
 
         <!-- ROW 1: Network & Pool -->
         <div class="grid-row top-row">
@@ -125,7 +209,7 @@
                             <label><i class="fas fa-users"></i> Miners</label>
                             <span id="pool-miners">0</span>
                         </div>
-                        <div class="stat-box clickable" onclick="openModal('blkModal')" title="Blocks Found">
+                        <div class="stat-box clickable" onclick="openModal('blkModal')" title="Blocks Found" role="button" tabindex="0" aria-haspopup="dialog">
                             <label><i class="fas fa-cube"></i> Blocks <i class="fas fa-chevron-right tiny-icon"></i></label>
                             <span id="pool-blocks">0</span>
                         </div>
@@ -136,7 +220,7 @@
                             <label><i class="fas fa-percent"></i> Effort</label>
                             <span id="pool-effort">---</span>
                         </div>
-                        <div class="stat-box clickable" onclick="openModal('payModal')" title="Payments Made">
+                        <div class="stat-box clickable" onclick="openModal('payModal')" title="Payments Made" role="button" tabindex="0" aria-haspopup="dialog">
                             <label><i class="fas fa-money-check-alt"></i> Payments <i class="fas fa-chevron-right tiny-icon"></i></label>
                             <span id="pool-payments">0</span>
                         </div>
@@ -257,7 +341,7 @@
                                         <p class="tiny text-muted mb-10">Minimum value: <span id="min-payout-val">0.003</span> XMR</p>
                                         <div class="input-group">
                                             <input type="number" id="setting-threshold" class="form-input no-arrow" step="0.001" placeholder="0.003">
-                                            <button onclick="saveThreshold()" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+                                            <button onclick="saveThreshold(this)" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
                                         </div>
                                     </div>
                                     <div class="settings-card mt-15">
@@ -266,7 +350,7 @@
                                         <input type="text" id="setting-email-from" class="form-input mb-10 full-width" placeholder="Current Email (Leave empty if new)">
                                         <div class="input-group">
                                             <input type="text" id="setting-email-to" class="form-input" placeholder="New Email Address">
-                                            <button onclick="saveEmail()" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Update</button>
+                                            <button onclick="saveEmail(this)" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Update</button>
                                         </div>
                                         <div class="check-group mt-10">
                                             <label class="switch">
@@ -321,12 +405,12 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- Footer -->
     <footer>
         <div class="container">
-            <p>&copy; 2021-<span id="year"></span> The Monerod Project | Frontend v3.2</p>
+            <p>&copy; 2021-<span id="year"></span> The Monerod Project | Frontend v3.5</p>
         </div>
     </footer>
 
